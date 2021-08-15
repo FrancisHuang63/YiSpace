@@ -1,0 +1,148 @@
+﻿@using DAL.Models
+@model TicketIssueModel
+@{
+    ViewData["Title"] = "Yi-Space | 票務追蹤編輯";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    IEnumerable<UserModel> assignUsers = ViewBag.AsignUser;
+    UserModel curUser = ViewBag.CurUser;
+
+    bool isNew = Model.ID == 0;
+    bool isProcessible;
+    bool isReadOnly;
+    TicketIssueType[] useableTypes;
+    switch (curUser.Level)
+    {
+        case UserLevel.QA:
+            isReadOnly = Model.Type == TicketIssueType.FeatureRequest;
+            isProcessible = Model.Type == TicketIssueType.TestCase;
+            useableTypes = new TicketIssueType[] { TicketIssueType.Bug, TicketIssueType.TestCase };
+            break;
+        case UserLevel.RD:
+            isReadOnly = true;
+            isProcessible = Model.Type != TicketIssueType.TestCase;
+            useableTypes = new TicketIssueType[] { };
+            break;
+        case UserLevel.PM:
+            isReadOnly = Model.Type != TicketIssueType.FeatureRequest;
+            isProcessible = false;
+            useableTypes = new TicketIssueType[] { TicketIssueType.FeatureRequest };
+            break;
+        case UserLevel.Administrator:
+            isReadOnly = false;
+            isProcessible = true;
+            useableTypes = new TicketIssueType[] { TicketIssueType.Bug, TicketIssueType.FeatureRequest, TicketIssueType.TestCase };
+            break;
+        default:
+            isReadOnly = true;
+            isProcessible = false;
+            useableTypes = new TicketIssueType[] { TicketIssueType.FeatureRequest };
+            break;
+    }
+}
+
+<h2>@(isReadOnly ? "檢視" : "編輯")</h2>
+
+<h4>票務議題</h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Edit" onsubmit="cancelDisable()">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Type" class="control-label"></label>
+                <select name="Type" id="Type" class="form-control" required disabled="@(isReadOnly)">
+                    @foreach (TicketIssueType item in Enum.GetValues(typeof(TicketIssueType)))
+                    {
+                        if (isNew)
+                        {
+                            if (useableTypes.Contains(item))
+                            {
+                                <option value="@((int)item)" selected="@(Model.Type == item)">@item.Description()</option>
+                            }
+                        }
+                        else
+                        {
+                            if (useableTypes.Contains(Model.Type))
+                            {
+                                if (useableTypes.Contains(item))
+                                {
+                                    <option value="@((int)item)" selected="@(Model.Type == item)">@item.Description()</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="@((int)item)" selected="@(Model.Type == item)">@item.Description()</option>
+                            }
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Summary" class="control-label"></label>
+                <input asp-for="Summary" class="form-control" required readonly="@(isReadOnly)" />
+                <span asp-validation-for="Summary" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label"></label>
+                <input asp-for="Description" class="form-control" required readonly="@(isReadOnly)" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            @if (isNew)
+            {
+                <div class="form-group">
+                    <label asp-for="AssignUserID" class="control-label"></label>
+                    <select name="AssignUserID" id="AssignUserID" class="form-control" required>
+                        @foreach (var item in assignUsers)
+                        {
+                            <option value="@(item.ID)" selected="@(Model.AssignUserID == item.ID)">@item.Name</option>
+                        }
+                    </select>
+                </div>
+            }
+            else
+            {
+                <input asp-for="AssignUserID" type="hidden">
+            }
+            <div class="form-group">
+                <label asp-for="State" class="control-label"></label>
+                <select name="State" id="State" class="form-control" required disabled="@(!isProcessible)">
+                    @foreach (TicketIssueState item in Enum.GetValues(typeof(TicketIssueState)))
+                    {
+                        <option value="@((int)item)" selected="@(Model.State == item)">@item.Description()</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Severity" class="control-label"></label>
+                <select name="Severity" id="Severity" class="form-control" required disabled="@(isReadOnly)">
+                    @foreach (TicketIssueSeverity item in Enum.GetValues(typeof(TicketIssueSeverity)))
+                    {
+                        <option value="@((int)item)" selected="@(Model.Severity == item)">@item.Description()</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Priority" class="control-label"></label>
+                <select name="Priority" id="Priority" class="form-control" required disabled="@(isReadOnly)">
+                    @foreach (TicketIssuePriority item in Enum.GetValues(typeof(TicketIssuePriority)))
+                    {
+                        <option value="@((int)item)" selected="@(Model.Priority == item)">@item.Description()</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="儲存" class="btn btn-primary" />
+            </div>
+            <input asp-for="ID" type="hidden">
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">取消</a>
+</div>
+<script>
+    function cancelDisable() {
+        $("form select").removeAttr("disabled");
+    }
+</script>

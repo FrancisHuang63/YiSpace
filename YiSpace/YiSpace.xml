@@ -1,0 +1,77 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>YiSpace</name>
+    </assembly>
+    <members>
+        <member name="M:YiSpace.API.EditTicketIssueController.Post(DAL.Models.TicketIssueModel)">
+            <summary>
+            新增或編輯議題(新增者ID為0)，需傳入會員Token
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:YiSpace.API.GetTicketIssueController.Get(System.Int64)">
+            <summary>
+            取得議題，需傳入會員Token
+            </summary>
+            <param name="ID">議題ID</param>
+            <returns></returns>
+        </member>
+        <member name="M:YiSpace.API.GetTicketIssueListController.Get">
+            <summary>
+            取得議題列表，需傳入會員Token
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:YiSpace.API.MemberLoginController.Post(YiSpace.Models.API.API_MemberLogin)">
+            <summary>
+            會員登入
+            </summary>
+        </member>
+        <member name="P:YiSpace.Attributes.HeaderAttribute.Name">
+            <summary>
+            Header Name
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.APIResponseBaseModel`1.MemberToken">
+            <summary>
+            取得的 token 值, 若認證失敗為空白, token 有效期為 30 分鐘
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.APIResponseBaseModel`1.Expire">
+            <summary>
+            MemberToken到期時間
+            </summary>
+        </member>
+        <member name="T:YiSpace.Models.API.ApiToken">
+            <summary>
+            token model
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.API.ApiToken.issued">
+            <summary>
+            開始時間
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.API.ApiToken.expire">
+            <summary>
+            有效時間
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.API.ApiToken.memberId">
+            <summary>
+            會員ID
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.API.API_MemberLogin.Account">
+            <summary>
+            帳號
+            </summary>
+        </member>
+        <member name="P:YiSpace.Models.API.API_MemberLogin.Password">
+            <summary>
+            密碼
+            </summary>
+        </member>
+    </members>
+</doc>

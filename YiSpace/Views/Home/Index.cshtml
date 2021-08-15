@@ -1,0 +1,118 @@
+﻿@using DAL.Models
+@{
+    ViewData["Title"] = "Yi-Space | 票務追蹤系統";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style type="text/css">
+    [v-cloak] {
+        display: none;
+    }
+</style>
+
+<h2>票務議題</h2>
+<table id="app" class="table" v-cloak>
+    <thead>
+        <tr>
+            <th>類型</th>
+            <th>狀態</th>
+            <th>嚴重性</th>
+            <th>優先權</th>
+            <th>摘要</th>
+            <th>被指派者</th>
+            <th>建立日期</th>
+            <th>建立者</th>
+            <th>更新日期</th>
+            <th>更新者</th>
+            <th></th>
+            <th v-if="curUser.level == '@((int)UserLevel.Administrator)' || curUser.level == '@((int)UserLevel.QA)'"></th>
+            <th v-if="curUser.level == '@((int)UserLevel.Administrator)' || curUser.level == '@((int)UserLevel.QA)' || curUser.level == '@((int)UserLevel.PM)'">
+                <p><a asp-controller="Home" asp-action="Edit">新增</a></p>
+            </th>
+        </tr>
+    </thead>
+    <tbody v-for="item in issueData">
+        <tr v-bind:class="item.state == '@((int)TicketIssueState.Resolved)' ? 'info':''">
+            <td>{{item.type_Desc}}</td>
+            <td>{{item.state_Desc}}</td>
+            <td>{{item.severity_Desc}}</td>
+            <td>{{item.priority_Desc}}</td>
+            <td>{{item.summary}}</td>
+            <td>{{item.assignUserName}}</td>
+            <td>{{item.createTime_Str}}</td>
+            <td>{{item.creatorName}}</td>
+            <td>{{item.modifyTime_Str}}</td>
+            <td>{{item.modifierName}}</td>
+            <td><a href="javascript:;" @@click="gotoEdit(item.id)">編輯</a></td>
+            <td v-if="curUser.level == '@((int)UserLevel.Administrator)' || curUser.level == '@((int)UserLevel.QA)'"><a href="javascript:;" @@click="delIssue(item.id)">刪除</a></td>
+            <td v-if="curUser.level == '@((int)UserLevel.Administrator)' || curUser.level == '@((int)UserLevel.QA)' || curUser.level == '@((int)UserLevel.PM)'"></td>
+        </tr>
+    </tbody>
+</table>
+
+<script src="https://ajax.aspnetcdn.com/ajax/jquery/jquery-2.2.0.min.js"
+        asp-fallback-src="~/lib/jquery/dist/jquery.min.js"
+        asp-fallback-test="window.jQuery"
+        crossorigin="anonymous"
+        integrity="sha384-K+ctZQ+LL8q6tP7I94W+qzQsfRV2a+AfHIi9k8z8l9ggpc8X+Ytst4yBo/hH+8Fk">
+</script>
+<script src="https://ajax.aspnetcdn.com/ajax/bootstrap/3.3.7/bootstrap.min.js"
+        asp-fallback-src="~/lib/bootstrap/dist/js/bootstrap.min.js"
+        asp-fallback-test="window.jQuery && window.jQuery.fn && window.jQuery.fn.modal"
+        crossorigin="anonymous"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa">
+</script>
+<script src="~/js/site.min.js" asp-append-version="true"></script>
+<script src="~/js/vue/vue.js"></script>
+<script src="~/js/axios/axios.min.js"></script>
+<script>
+    var app = new Vue({
+        el: '#app',
+        data: {
+            issueData: {},
+            curUser: {}
+        },
+        methods: {
+            getIssueData: function () {
+                let self = this;
+                let url = '@Url.Action("GetIssueJson", "Home")';
+                axios.get(url).then(function (response) {
+                    if (response.data.success) {
+                        self.issueData = response.data.data;
+                        self.$forceUpdate();
+                    }
+                });
+            }
+            ,getCurUser: function () {
+                let self = this;
+                let url = `@Url.Action("GetCurUser", "Home")`;
+                axios.get(url).then(function (response) {
+                    if (response.data.success) {
+                        self.curUser = response.data.data;
+                    }
+                });
+            }
+            , delIssue: function (id) {
+                let self = this;
+                let url = '@Url.Action("DelIssue", "Home")';
+                let parms = new FormData();
+                parms.append('id', id);
+                axios.post(url, parms).then(function (response) {
+                    if (response.data.success) {
+                        if (response.data.data) {
+                            alert('刪除成功');
+                            self.getIssueData();
+                        }
+                    }
+                });
+            }
+            , gotoEdit: function (id) {
+                location.href = `@Url.Action("Edit", "Home")/${id}`;
+            }
+        },
+        created: function () {
+            this.getCurUser();
+            this.getIssueData();
+        }
+    });
+</script>

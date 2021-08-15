@@ -1,0 +1,77 @@
+﻿@using DAL.Models
+@model UserModel
+@{
+    ViewData["Title"] = "Yi-Space | 票務追蹤編輯";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isNew = Model.ID == 0;
+    bool isAdmin = User.IsInRole(((int)UserLevel.Administrator).ToString());
+}
+
+<h2>@(isNew ? "新增使用者" : "編輯使用者")</h2>
+
+<h4></h4>
+<hr />
+<div class="row">
+    <div class="col-md-12">
+        <form asp-action="Edit" onsubmit="cancelDisable()">
+            <div class="form-group">
+                <label asp-for="Name" class="control-label"></label>
+                <input asp-for="Name" class="form-control" required />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Level" class="control-label"></label>
+                <select name="Level" id="Level" class="form-control" required disabled="@(!isAdmin)">
+                    @foreach (UserLevel item in Enum.GetValues(typeof(UserLevel)))
+                    {
+                        if(isNew && item == UserLevel.Administrator)
+                        {
+                            continue;
+                        }
+                        <option value="@((int)item)" selected="@(Model.Level == item)">@item.Description()</option>
+                    }
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Account" class="control-label"></label>
+                <input asp-for="Account" class="form-control" required readonly="@(!isAdmin)" />
+                <span asp-validation-for="Account" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                @if (!isNew)
+                {
+                    <a id="changePsw" href="javascript:;">變更密碼</a>
+                }
+                <input id="Password" name="Password" class="form-control" type="password" value="@(isNew ? "" : "************")" required readonly="@(!isNew)" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="儲存" class="btn btn-primary" />
+            </div>
+            <input asp-for="ID" type="hidden">
+            @Html.Hidden("isNewPassword", false)
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index" asp-controller="Home">取消</a>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script type="text/javascript">
+    function cancelDisable() {
+        $("form select").removeAttr("disabled");
+    }
+
+    $("#changePsw").click(function () {
+        $("#Password").removeAttr("readonly");
+        $("#Password").val("");
+        $("#isNewPassword").val(true);
+    });
+</script>
